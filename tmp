@@ -1,2 +1,15 @@
 th test.lua cv/lm_lstm_epoch50.00_1.3322.t7
 th sample.lua cv/lm_lstm_epoch50.00_1.3322.t7 -primetext "to be or not to be, this is a question"
+th train.lua -rnn_size 16 -num_layers 2 -checkpoint_dir xxx
+
+
+
+
+647/21150 (epoch 1.530), train_loss = 2.65710386, grad/param norm = 3.9799e-01, time/batch = 0.0539s	
+648/21150 (epoch 1.532), train_loss = 2.63880418, grad/param norm = 2.0905e-01, time/batch = 0.0550s	
+649/21150 (epoch 1.534), train_loss = 2.63229446, grad/param norm = 1.9895e-01, time/batch = 0.0546s	
+650/21150 (epoch 1.537), train_loss = 2.72551268, grad/param norm = 1.6850e-01, time/batch = 0.0548s	
+651/21150 (epoch 1.539), train_loss = 2.67529479, grad/param norm = 2.6991e-01, time/batch = 0.0543s	
+
+
+th train.lua -rnn_size 16 -num_layers 2 -seq_length 3 -checkpoint_dir xxx
