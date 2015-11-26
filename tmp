@@ -1,0 +1,2 @@
+th test.lua cv/lm_lstm_epoch50.00_1.3322.t7
+th sample.lua cv/lm_lstm_epoch50.00_1.3322.t7 -primetext "to be or not to be, this is a question"
