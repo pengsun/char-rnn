@@ -1,6 +1,4 @@
---[[
-
-This file trains a character-level multi-layer RNN on text data
+--[[ This file trains a character-level multi-layer RNN on text data
 
 Code is based on implementation in 
 https://github.com/oxford-cs-ml-2015/practical6
@@ -9,7 +7,6 @@ many other common model/optimization bells and whistles.
 The practical6 code is in turn based on 
 https://github.com/wojciechz/learning_to_execute
 which is turn based on other stuff in Torch, etc... (long lineage)
-
 ]]--
 
 require 'torch'
@@ -124,6 +121,7 @@ function is_vocab_compatible(v1, v2)
       vocab_compatible = false
     end
   end
+  return vocab_compatible
 end
 
 function assert_saved_vocab_compatible(v, saved_v)
@@ -187,9 +185,7 @@ function initialize_parameters(prototypes)
   local params, _ = model_utils.combine_all_parameters(prototypes.rnn)
   
   -- initialization
-  if do_random_init then
-    params:uniform(-0.08, 0.08) -- small uniform numbers
-  end
+  params:uniform(-0.08, 0.08) -- small uniform numbers
   
   -- initialize the LSTM forget gates with slightly higher biases to encourage remembering in the beginning
   if opt.model == 'lstm' then
@@ -250,9 +246,7 @@ function main()
   -- create the data loader class
   local split_sizes = get_split_sizes() -- {train, validate, test} in percentage
   local loader = CharSplitLMMinibatchLoader.create(opt.data_dir, opt.batch_size, opt.seq_length, split_sizes)
-  local vocab_size = loader.vocab_size  -- the number of distinct characters
-  local vocab = loader.vocab_mapping
-  print('vocab size: ' .. vocab_size)
+  print('vocab size: ' .. loader.vocab_size)
   
   -- make sure output directory exists
   if not path.exists(opt.checkpoint_dir) then 
@@ -263,14 +257,16 @@ function main()
   local do_random_init = true
   if string.len(opt.init_from) > 0 then
     do_random_init = false
-    protos, saved_vocab = load_model()
-    assert_saved_vocab_compatible(vocab, saved_vocab)
+    protos, saved_vocab_mapping = load_model()
+    assert_saved_vocab_compatible(loader.vocab_mapping, saved_vocab_mapping)
   else
-    protos = create_prototypes(vocab_size)
+    protos = create_prototypes(loader.vocab_size)
   end
   
   -- initialize all the internal parameters & the cell/hidden states
-  initialize_parameters(protos)
+  if do_random_init then
+    initialize_parameters(protos)
+  end
   init_state = initialize_state()
 
   -- ship the model and state to the GPU if desired
@@ -285,10 +281,9 @@ function main()
   local init_state_global = clone_list(init_state)
   
   -- evaluate the loss over an entire split
-  function eval_split(split_index, max_batches)
+  function eval_split(split_index)
     print('evaluating loss over split index ' .. split_index)
     local n = loader.split_sizes[split_index]
-    if max_batches ~= nil then n = math.min(max_batches, n) end
 
     loader:reset_batch_pointer(split_index) -- move batch iteration pointer for this split to front
     local loss = 0

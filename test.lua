@@ -5,13 +5,20 @@ require 'nn'
 require 'nngraph'
 require 'optim'
 require 'lfs'
+require 'xlua'
+
 require 'util.OneHot'
 require 'util.misc'
+local CharSplitLMMinibatchLoader = require 'util.CharSplitLMMinibatchLoader'
+local model_utils = require 'util.model_utils'
+local LSTM = require 'model.LSTM'
+local GRU = require 'model.GRU'
+local RNN = require 'model.RNN'
 
-function gprint(str)
-  -- gated print: simple utility function wrapping a print
-  if opt.verbose == 1 then print(str) end
-end
+-- global variables
+opt = nil
+protos = nil
+init_state = nil
 
 function is_cu()
   return opt.gpuid >= 0 and opt.opencl == 0
@@ -21,51 +28,117 @@ function is_cl()
   return opt.gpuid >= 0 and opt.opencl == 1
 end
 
-function setup_env()
-  -- check that cunn/cutorch are installed if user wants to use the GPU
+function model_table_togpu(t)
   if is_cu() then
+    for k,v in pairs(t) do v:cuda() end
+  end
+  if is_cl() then
+    for k,v in pairs(t) do v:cl() end
+  end
+end
+
+function tensor_table_togpu(t)
+  if is_cu() then
+    for k,v in pairs(t) do t[k] = v:float():cuda() end
+  end
+  if is_cl() then
+    for k,v in pairs(t) do t[k] = v:cl() end
+  end
+end
+
+function xy_togpu(x,y)
+  x = x:transpose(1,2):contiguous() -- swap the axes for faster indexing
+  y = y:transpose(1,2):contiguous()
+  if opt.gpuid >= 0 and opt.opencl == 0 then -- ship the input arrays to GPU
+    -- have to convert to float because integers can't be cuda()'d
+    x = x:float():cuda()
+    y = y:float():cuda()
+  end
+  if opt.gpuid >= 0 and opt.opencl == 1 then -- ship the input arrays to GPU
+    x = x:cl()
+    y = y:cl()
+  end
+  return x,y
+end
+
+function setup_env()
+  -- initialize cunn/cutorch for training on the GPU and fall back to CPU gracefully
+  if opt.gpuid >= 0 and opt.opencl == 0 then
     local ok, cunn = pcall(require, 'cunn')
     local ok2, cutorch = pcall(require, 'cutorch')
-    if not ok then gprint('package cunn not found!') end
-    if not ok2 then gprint('package cutorch not found!') end
+    if not ok then print('package cunn not found!') end
+    if not ok2 then print('package cutorch not found!') end
     if ok and ok2 then
-      gprint('using CUDA on GPU ' .. opt.gpuid .. '...')
-      gprint('Make sure that your saved checkpoint was also trained with GPU. If it was trained with CPU use -gpuid -1 for sampling as well')
+      print('using CUDA on GPU ' .. opt.gpuid .. '...')
       cutorch.setDevice(opt.gpuid + 1) -- note +1 to make it 0 indexed! sigh lua
       cutorch.manualSeed(opt.seed)
     else
-      gprint('Falling back on CPU mode')
+      print('If cutorch and cunn are installed, your CUDA toolkit may be improperly configured.')
+      print('Check your CUDA toolkit installation, rebuild cutorch and cunn, and try again.')
+      print('Falling back on CPU mode')
       opt.gpuid = -1 -- overwrite user setting
     end
   end
 
-  -- check that clnn/cltorch are installed if user wants to use OpenCL
-  if is_cl() then
+  -- initialize clnn/cltorch for training on the GPU and fall back to CPU gracefully
+  if opt.gpuid >= 0 and opt.opencl == 1 then
     local ok, cunn = pcall(require, 'clnn')
     local ok2, cutorch = pcall(require, 'cltorch')
     if not ok then print('package clnn not found!') end
     if not ok2 then print('package cltorch not found!') end
     if ok and ok2 then
-      gprint('using OpenCL on GPU ' .. opt.gpuid .. '...')
-      gprint('Make sure that your saved checkpoint was also trained with GPU. If it was trained with CPU use -gpuid -1 for sampling as well')
+      print('using OpenCL on GPU ' .. opt.gpuid .. '...')
       cltorch.setDevice(opt.gpuid + 1) -- note +1 to make it 0 indexed! sigh lua
       torch.manualSeed(opt.seed)
     else
-      gprint('Falling back on CPU mode')
+      print('If cltorch and clnn are installed, your OpenCL driver may be improperly configured.')
+      print('Check your OpenCL driver installation, check output of clinfo command, and try again.')
+      print('Falling back on CPU mode')
       opt.gpuid = -1 -- overwrite user setting
     end
   end
-
-  -- for random number
+  
   torch.manualSeed(opt.seed)
+end
+
+function get_split_sizes()
+  local test_frac = math.max(0, 1 - (opt.train_frac + opt.val_frac))
+  return {opt.train_frac, opt.val_frac, test_frac}
+end
+
+function is_vocab_compatible(v1, v2)
+  local vocab_compatible = true
+  for c,i in pairs(v2) do 
+    if not v1[c] == i then 
+      vocab_compatible = false
+    end
+  end
+  return vocab_compatible
+end
+
+function assert_saved_vocab_compatible(v, saved_v)
+  if not is_vocab_compatible(v, saved_v) then
+    error('the character vocabulary for this dataset and the one' .. 
+      'in the saved checkpoint are not the same. This is trouble.')
+  end  
 end
 
 function load_model_checkpoint()
   if not lfs.attributes(opt.model, 'mode') then
-    gprint('Error: File ' .. opt.model .. ' does not exist.' .. 
+    print('Error: File ' .. opt.model .. ' does not exist.' .. 
       'Are you sure you didn\'t forget to prepend cv/ ?')
   end
   return torch.load(opt.model)
+end
+
+function create_clones(prototypes, seq_length)
+  -- make a bunch of clones after flattening, as that reallocates memory
+  local clones = {}
+  for name,proto in pairs(prototypes) do
+    print('cloning ' .. name)
+    clones[name] = model_utils.clone_many_times(proto, seq_length, not proto.parameters)
+  end
+  return clones
 end
 
 function get_prototypes(checkpoint)
@@ -74,22 +147,18 @@ function get_prototypes(checkpoint)
   return protos
 end
 
-function make_inverse_vocabulary(vocab)
-  local ivocab = {}
-  for c,i in pairs(vocab) do ivocab[i] = c end
-  return ivocab
-end
-
 function get_states(checkpoint)
   -- initialize the rnn state to all zeros
-  gprint('creating an ' .. checkpoint.opt.model .. '...')
+  print('creating an ' .. checkpoint.opt.model .. '...')
+  print('num_layers = ' .. checkpoint.opt.num_layers)
+  print('rnn_size = ' .. checkpoint.opt.rnn_size)
+  
   local current_state = {}
   for L = 1, checkpoint.opt.num_layers do
     -- c and h for all layers
-    local h_init = torch.zeros(1, checkpoint.opt.rnn_size):double()
-    if opt.gpuid >= 0 and opt.opencl == 0 then h_init = h_init:cuda() end
-    if opt.gpuid >= 0 and opt.opencl == 1 then h_init = h_init:cl() end
+    local h_init = torch.zeros(opt.batch_size, checkpoint.opt.rnn_size):double()
     table.insert(current_state, h_init:clone())
+    
     if checkpoint.opt.model == 'lstm' then
       table.insert(current_state, h_init:clone())
     end
@@ -97,113 +166,108 @@ function get_states(checkpoint)
   return current_state
 end
 
-
-function pred_on_seq(seq_text, states, vocab)
-  local prediction
-  for c in seq_text:gmatch'.' do
-    cur_char = torch.Tensor{vocab[c]}
-    io.write(ivocab[cur_char[1]])
-    if is_cu() then cur_char = cur_char:cuda() end
-    if is_cl() then cur_char = cur_char:cl() end
-    
-    -- outputs: a list of [state1,state2,..stateN,prediction]. 
-    local outputs = protos.rnn:forward{cur_char, unpack(states)}
-    
-    states = {}
-    for i = 1, state_size do table.insert(states, outputs[i]) end
-    prediction = outputs[#outputs] -- last element holds the log probabilities
-  end
-  return prediction
-end
-
-function pred_random(size)
-  local prediction = torch.Tensor(1, size):fill(1)/(size)
-  if is_cu() then prediction = prediction:cuda() end
-  if is_cl() then prediction = prediction:cl() end
-  return prediction
-end
-
-function gen_seq(protos, current_state, current_prediction, ivocab)
-  seq = ''
-  local state_size = #current_state
-  for i = 1, opt.length do
-
-    -- log probabilities from the previous timestep
-    if opt.sample == 0 then
-      -- use argmax
-      local _, prev_char_ = current_prediction:max(2)
-      cur_char = prev_char_:resize(1)
-    else
-      -- use sampling
-      current_prediction:div(opt.temperature) -- scale by temperature
-      local probs = torch.exp(current_prediction):squeeze()
-      probs:div(torch.sum(probs)) -- renormalize so probs sum to one
-      cur_char = torch.multinomial(probs:float(), 1):resize(1):float()
-    end
-
-    -- forward the rnn for next character
-    local outputs = protos.rnn:forward{cur_char, unpack(current_state)}
-    -- first N-1 elements hold states
-    current_state = {}
-    for i = 1, state_size do 
-      table.insert(current_state, outputs[i]) 
-    end
-    -- last element holds the log probabilities
-    current_prediction = outputs[#outputs] 
-
-    seq = seq .. ivocab[cur_char[1]]
-    io.write(string.sub(seq, -1, -1))
-  end
-  return seq
-end
-
-function main ()
+function main()
   cmd = torch.CmdLine()
   cmd:text()
-  cmd:text('Sample from a character-level language model')
+  cmd:text('Train a character-level language model')
   cmd:text()
   cmd:text('Options')
-  -- required:
-  cmd:argument('-model','model checkpoint to use for sampling')
-  -- optional parameters
-  cmd:option('-seed',123,'random number generator\'s seed')
-  cmd:option('-sample',1,' 0 to use max at each timestep, 1 to sample at each timestep')
-  cmd:option('-primetext',"",'used as a prompt to "seed" the state of the LSTM using a given sequence, before we sample.')
-  cmd:option('-length',2000,'number of characters to sample')
-  cmd:option('-temperature',1,'temperature of sampling')
+  -- required: saved model path
+   cmd:argument('-model','model checkpoint to use for sampling')
+  -- dataset & its partition
+  cmd:option('-data_dir','data/tinyshakespeare','data directory. Should contain the file input.txt with input data')
+  cmd:option('-train_frac',0.95,'fraction of data that goes into train set')
+  cmd:option('-val_frac',0.00,'fraction of data that goes into validation set') -- test_frac will be computed as (1 - train_frac - val_frac)
+  -- parameters
+  cmd:option('-seq_length',54,'number of timesteps to unroll for')
+  cmd:option('-batch_size',48,'number of sequences to train on in parallel')
+  -- GPU/CPU
+  cmd:option('-seed',123,'torch manual random number generator seed')
   cmd:option('-gpuid',0,'which gpu to use. -1 = use CPU')
   cmd:option('-opencl',0,'use OpenCL (instead of CUDA)')
-  cmd:option('-verbose',1,'set to 0 to ONLY print the sampled text, no diagnostics')
   cmd:text()
+  -- parse input params
   opt = cmd:parse(arg)
-
-  setup_env()
-
-  local checkpoint = load_model_checkpoint()
-  local protos = get_prototypes(checkpoint)
-  local vocab = checkpoint.vocab
-  local ivocab = make_inverse_vocabulary(vocab)
-  local cur_state = get_states(checkpoint)
   
-  -- do a few seeded timesteps
-  local cur_pred
-  local seed_text = opt.primetext
-  if string.len(seed_text) > 0 then
-    gprint('seeding with ' .. seed_text)
-    gprint('--------------------------')
-    cur_pred = pred_on_seq(seed_text, cur_state)
-  else
-    -- fill with uniform probabilities over characters (? hmm)
-    gprint('missing seed text, ' .. 
-      'using uniform probability over first character')
-    gprint('--------------------------')
-    cur_pred = pred_random(#ivocab)
-  end
+  setup_env()
+  
+  -- create the data loader class
+  local split_sizes = get_split_sizes() -- {train, validate, test} in percentage
+  require('mobdebug').start()
+  local loader = CharSplitLMMinibatchLoader.create(opt.data_dir, opt.batch_size, opt.seq_length, split_sizes)
+  print('batch_size = ' .. loader.batch_size)
+  print('vocab size: ' .. loader.vocab_size)
+  
+  -- load models
+  local checkpoint = load_model_checkpoint()
+  assert_saved_vocab_compatible(loader.vocab_mapping, checkpoint.vocab)
+  local protos = get_prototypes(checkpoint)
+  local init_state = get_states(checkpoint)
 
-  -- start sampling/argmaxing
-  local seq = gen_seq(protos, cur_state, cur_pred, ivocab)
-  io.write('\n') 
-  io.flush()
+  -- ship the model and state to the GPU if desired
+  model_table_togpu(protos)
+  tensor_table_togpu(init_state)
+  
+  -- put into one flattened parameters tensor
+  params, grad_params = model_utils.combine_all_parameters(protos.rnn)
+  print('number of parameters in the model: ' .. params:nElement())
+  
+  -- unroll along the time axis
+  local clones = create_clones(protos, opt.seq_length)
+  
+  -- help function
+  function eval_split(split_index, rnn_state)
+    -- evaluate the loss over an entire split
+    print('evaluating loss over split index ' .. split_index)
+    local n = loader.split_sizes[split_index]
+
+    loader:reset_batch_pointer(split_index) -- move batch iteration pointer for this split to front
+    local loss = 0
+    rnn_state = rnn_state or {[0] = init_state}
+
+    for i = 1, n do -- iterate over batches in the split
+      -- fetch a batch
+      local x, y = loader:next_batch(split_index)
+      x, y = xy_togpu(x, y)
+      -- forward pass
+      for t = 1, opt.seq_length do
+        clones.rnn[t]:evaluate() -- for dropout proper functioning
+        local lst = clones.rnn[t]:forward{x[t], unpack(rnn_state[t-1])}
+        rnn_state[t] = {}
+        for i = 1, #init_state do table.insert(rnn_state[t], lst[i]) end
+        prediction = lst[#lst] 
+        loss = loss + clones.criterion[t]:forward(prediction, y[t])
+      end
+      -- carry over lstm state
+      rnn_state[0] = rnn_state[#rnn_state]
+      -- progress bar
+      xlua.progress(i, n)
+    end
+
+    loss = loss / opt.seq_length / n
+    return loss, rnn_state
+  end -- eval_split
+
+  function loss_to_bitsperchar(loss)
+    return loss / math.log(2)
+  end
+  
+  -- warming up by going through the the traning set
+  print('warm up on training set...')
+  local train_loss, rnn_state = eval_split(1) -- 1 for training set
+  local train_bpc = loss_to_bitsperchar(train_loss)
+  print('train loss = ' .. train_loss)
+  print('train bpc = ' .. train_bpc)
+  print('\n')
+  
+  -- do the real evaluation on testing set
+  print('evaluate on testing set...')
+  local test_loss, _ = eval_split(3, rnn_state) -- 3 for training set
+  local test_bpc = loss_to_bitsperchar(test_loss)
+  print('test loss = ' .. test_loss)
+  print('test bpc = ' .. test_bpc)
+  print('\n')
+  
 end
 
 main()
