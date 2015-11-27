@@ -3,8 +3,6 @@ th sample.lua cv/lm_lstm_epoch50.00_1.3322.t7 -primetext "to be or not to be, th
 th train.lua -rnn_size 16 -num_layers 2 -checkpoint_dir xxx
 
 
-
-
 647/21150 (epoch 1.530), train_loss = 2.65710386, grad/param norm = 3.9799e-01, time/batch = 0.0539s	
 648/21150 (epoch 1.532), train_loss = 2.63880418, grad/param norm = 2.0905e-01, time/batch = 0.0550s	
 649/21150 (epoch 1.534), train_loss = 2.63229446, grad/param norm = 1.9895e-01, time/batch = 0.0546s	

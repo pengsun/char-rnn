@@ -1,7 +1,5 @@
 
---[[
-
-This file samples characters from a trained model
+--[[ This file samples characters from a trained model
 
 Code is based on implementation in 
 https://github.com/oxford-cs-ml-2015/practical6
@@ -14,57 +12,11 @@ require 'optim'
 require 'lfs'
 require 'util.OneHot'
 require 'util.misc'
+require 'util.env_utils'
 
 function gprint(str)
   -- gated print: simple utility function wrapping a print
   if opt.verbose == 1 then print(str) end
-end
-
-function is_cu()
-  return opt.gpuid >= 0 and opt.opencl == 0
-end
-
-function is_cl()
-  return opt.gpuid >= 0 and opt.opencl == 1
-end
-
-function setup_env()
-  -- check that cunn/cutorch are installed if user wants to use the GPU
-  if is_cu() then
-    local ok, cunn = pcall(require, 'cunn')
-    local ok2, cutorch = pcall(require, 'cutorch')
-    if not ok then gprint('package cunn not found!') end
-    if not ok2 then gprint('package cutorch not found!') end
-    if ok and ok2 then
-      gprint('using CUDA on GPU ' .. opt.gpuid .. '...')
-      gprint('Make sure that your saved checkpoint was also trained with GPU. If it was trained with CPU use -gpuid -1 for sampling as well')
-      cutorch.setDevice(opt.gpuid + 1) -- note +1 to make it 0 indexed! sigh lua
-      cutorch.manualSeed(opt.seed)
-    else
-      gprint('Falling back on CPU mode')
-      opt.gpuid = -1 -- overwrite user setting
-    end
-  end
-
-  -- check that clnn/cltorch are installed if user wants to use OpenCL
-  if is_cl() then
-    local ok, cunn = pcall(require, 'clnn')
-    local ok2, cutorch = pcall(require, 'cltorch')
-    if not ok then print('package clnn not found!') end
-    if not ok2 then print('package cltorch not found!') end
-    if ok and ok2 then
-      gprint('using OpenCL on GPU ' .. opt.gpuid .. '...')
-      gprint('Make sure that your saved checkpoint was also trained with GPU. If it was trained with CPU use -gpuid -1 for sampling as well')
-      cltorch.setDevice(opt.gpuid + 1) -- note +1 to make it 0 indexed! sigh lua
-      torch.manualSeed(opt.seed)
-    else
-      gprint('Falling back on CPU mode')
-      opt.gpuid = -1 -- overwrite user setting
-    end
-  end
-
-  -- for random number
-  torch.manualSeed(opt.seed)
 end
 
 function load_model_checkpoint()
@@ -79,12 +31,6 @@ function get_prototypes(checkpoint)
   protos = checkpoint.protos
   protos.rnn:evaluate() -- put in eval mode so that dropout works properly
   return protos
-end
-
-function make_inverse_vocabulary(vocab)
-  local ivocab = {}
-  for c,i in pairs(vocab) do ivocab[i] = c end
-  return ivocab
 end
 
 function get_states(checkpoint)
@@ -104,8 +50,8 @@ function get_states(checkpoint)
   return current_state
 end
 
-
-function pred_on_seq(seq_text, states, vocab)
+function pred_on_seq(seq_text, states, vocab, ivocab)
+  local state_size = #states
   local prediction
   for c in seq_text:gmatch'.' do
     cur_char = torch.Tensor{vocab[c]}
@@ -198,7 +144,7 @@ function main ()
   if string.len(seed_text) > 0 then
     gprint('seeding with ' .. seed_text)
     gprint('--------------------------')
-    cur_pred = pred_on_seq(seed_text, cur_state, vocab)
+    cur_pred = pred_on_seq(seed_text, cur_state, vocab, ivocab)
   else
     -- fill with uniform probabilities over characters (? hmm)
     gprint('missing seed text, ' .. 
