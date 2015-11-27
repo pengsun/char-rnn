@@ -93,7 +93,9 @@ function gen_seq(protos, current_state, current_prediction, ivocab)
       probs:div(torch.sum(probs)) -- renormalize so probs sum to one
       cur_char = torch.multinomial(probs:float(), 1):resize(1):float()
     end
-
+    if is_cu() then cur_char = cur_char:cuda() end
+    if is_cl() then cur_char = cur_char:cl() end
+    
     -- forward the rnn for next character
     local outputs = protos.rnn:forward{cur_char, unpack(current_state)}
     -- first N-1 elements hold states
@@ -131,7 +133,7 @@ function main ()
   opt = cmd:parse(arg)
 
   setup_env()
-
+  
   local checkpoint = load_model_checkpoint()
   local protos = get_prototypes(checkpoint)
   local vocab = checkpoint.vocab
@@ -144,6 +146,7 @@ function main ()
   if string.len(seed_text) > 0 then
     gprint('seeding with ' .. seed_text)
     gprint('--------------------------')
+    require'mobdebug'.start()
     cur_pred = pred_on_seq(seed_text, cur_state, vocab, ivocab)
   else
     -- fill with uniform probabilities over characters (? hmm)
