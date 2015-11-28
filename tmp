@@ -59,7 +59,7 @@ CUDA_VISIBLE_DEVICES=0 th sample.lua cv_hutter/lm_lstmbig_epoch50.00_1.1675.t7 -
     <id>14802</id>
     <revi"
 
-cv_hutter/lm_lstmbig_epoch50.00_1.1675.t7 -primetext "<title> Inherence relation</id>
+CUDA_VISIBLE_DEVICES=0 th sample.lua cv_hutter/lm_lstmbig_epoch50.00_1.1675.t7 -primetext "<title> Inherence relation</id>
 <id>14807</id>
 <revision>
   <id>34980694</id>
