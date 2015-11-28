@@ -11,7 +11,7 @@ function is_cl()
   return opt.gpuid >= 0 and opt.opencl == 1
 end
 
-function setup_env()
+function set_env_cu()
   -- initialize cunn/cutorch for training on the GPU and fall back to CPU gracefully
   if opt.gpuid >= 0 and opt.opencl == 0 then
     local ok, cunn = pcall(require, 'cunn')
@@ -21,15 +21,17 @@ function setup_env()
     if ok and ok2 then
       print('using CUDA on GPU ' .. opt.gpuid .. '...')
       cutorch.setDevice(opt.gpuid + 1) -- note +1 to make it 0 indexed! sigh lua
-      cutorch.manualSeed(opt.seed)
+      if opt.seed then cutorch.manualSeed(opt.seed) end
     else
       print('If cutorch and cunn are installed, your CUDA toolkit may be improperly configured.')
       print('Check your CUDA toolkit installation, rebuild cutorch and cunn, and try again.')
       print('Falling back on CPU mode')
       opt.gpuid = -1 -- overwrite user setting
     end
-  end
+  end  
+end
 
+function set_env_cl()
   -- initialize clnn/cltorch for training on the GPU and fall back to CPU gracefully
   if opt.gpuid >= 0 and opt.opencl == 1 then
     local ok, cunn = pcall(require, 'clnn')
@@ -39,16 +41,24 @@ function setup_env()
     if ok and ok2 then
       print('using OpenCL on GPU ' .. opt.gpuid .. '...')
       cltorch.setDevice(opt.gpuid + 1) -- note +1 to make it 0 indexed! sigh lua
-      torch.manualSeed(opt.seed)
+      if opt.seed then torch.manualSeed(opt.seed) end
     else
       print('If cltorch and clnn are installed, your OpenCL driver may be improperly configured.')
       print('Check your OpenCL driver installation, check output of clinfo command, and try again.')
       print('Falling back on CPU mode')
       opt.gpuid = -1 -- overwrite user setting
     end
+  end  
+end
+
+function setup_env()
+  if opt.gpuid then 
+    set_env_cu()
+    set_env_cl()
   end
   
-  torch.manualSeed(opt.seed)
+  -- seed for cpu random number
+  if opt.seed then torch.manualSeed(opt.seed) end
 end
 
 function model_table_togpu(t)

@@ -1,5 +1,11 @@
 --[[ miscellaneous utilities ]]--
 
+function table_len(t)
+  local count = 0
+  for _ in pairs(t) do count = count + 1 end
+  return count
+end
+
 function clone_list(tensor_list, zero_too)
   -- utility function. todo: move away to some utils file?
   -- takes a list of tensors and returns a list of cloned tensors
