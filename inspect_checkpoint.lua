@@ -6,6 +6,7 @@ require 'nngraph'
 
 require 'util.OneHot'
 require 'util.misc'
+require 'util.env_utils'
 
 cmd = torch.CmdLine()
 cmd:text()
@@ -20,24 +21,18 @@ cmd:text()
 -- parse input params
 opt = cmd:parse(arg)
 
-if opt.gpuid >= 0 and opt.opencl == 0 then
-    print('using CUDA on GPU ' .. opt.gpuid .. '...')
-    require 'cutorch'
-    require 'cunn'
-    cutorch.setDevice(opt.gpuid + 1)
+setup_env()
+
+local checkpoint = torch.load(opt.model)
+
+local function print_kv(t, k)
+  print(k .. ' = ')
+  print(t[k])
 end
 
-if opt.gpuid >= 0 and opt.opencl == 1 then
-    print('using OpenCL on GPU ' .. opt.gpuid .. '...')
-    require 'cltorch'
-    require 'clnn'
-    cltorch.setDevice(opt.gpuid + 1)
-end
-
-local model = torch.load(opt.model)
-
-print('opt:')
-print(model.opt)
-print('val losses:')
-print(model.val_losses)
+print_kv(checkpoint, 'opt')
+print_kv(checkpoint, 'val_losses')
+require'mobdebug'.start()
+print_kv(checkpoint, 'vocab')
+--print('#vocab = '); print(table_len(checkpoint.vocab))
 
