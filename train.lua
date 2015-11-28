@@ -74,7 +74,7 @@ function initialize_state()
   return init_state
 end
 
-function initialize_parameters(prototypes)
+function initialize_parameters_rand(prototypes)
   local params, _ = model_utils.combine_all_parameters(prototypes.rnn)
   
   -- initialization
@@ -147,9 +147,9 @@ function main()
   end
 
   -- define the model: prototypes for one timestep, then clone them in time
-  local do_random_init = true
+  local flag_rand_params = true
   if string.len(opt.init_from) > 0 then
-    do_random_init = false
+    flag_rand_params = false
     protos, saved_vocab_mapping = load_model()
     assert_saved_vocab_compatible(loader.vocab_mapping, saved_vocab_mapping)
   else
@@ -157,8 +157,8 @@ function main()
   end
   
   -- initialize all the internal parameters & the cell/hidden states
-  if do_random_init then
-    initialize_parameters(protos)
+  if flag_rand_params then
+    initialize_parameters_rand(protos)
   end
   init_state = initialize_state()
 

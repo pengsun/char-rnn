@@ -66,7 +66,7 @@ function pred_on_seq(seq_text, states, vocab, ivocab)
     for i = 1, state_size do table.insert(states, outputs[i]) end
     prediction = outputs[#outputs] -- last element holds the log probabilities
   end
-  return prediction
+  return prediction, states
 end
 
 function pred_random(size)
@@ -146,8 +146,7 @@ function main ()
   if string.len(seed_text) > 0 then
     gprint('seeding with ' .. seed_text)
     gprint('--------------------------')
-    require'mobdebug'.start()
-    cur_pred = pred_on_seq(seed_text, cur_state, vocab, ivocab)
+    cur_pred, cur_state = pred_on_seq(seed_text, cur_state, vocab, ivocab)
   else
     -- fill with uniform probabilities over characters (? hmm)
     gprint('missing seed text, ' .. 
