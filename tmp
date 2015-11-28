@@ -11,6 +11,13 @@ th train.lua -rnn_size 16 -num_layers 2 -seq_length 3 -checkpoint_dir xxx
 651/21150 (epoch 1.539), train_loss = 2.67529479, grad/param norm = 2.6991e-01, time/batch = 0.0543s	
 
 ##################
+## three kindoms
+##################
+CUDA_VISIBLE_DEVICES=1 th train.lua -data_dir data/threekingdoms -print_every 250 -eval_val_every 95000 -checkpoint_dir cv_threekingdoms -seq_length 100 -batch_size 100
+
+
+
+##################
 ## hutter
 ##################
 
