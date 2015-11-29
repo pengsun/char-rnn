@@ -47,6 +47,28 @@ CUDA_VISIBLE_DEVICES=0 th test.lua cv_hutter/lm_lstm_epoch50.00_1.2562.t7 -data_
 ###lstm train big (2 layers)
 CUDA_VISIBLE_DEVICES=0 th train.lua -data_dir data/hutter -print_every 250 -eval_val_every 95000 -checkpoint_dir cv_hutter -seq_length 100 -batch_size 250 -rnn_size 192 -savefile lstmbig
 
+###lstm sample bit (2 layers)
+CUDA_VISIBLE_DEVICES=0 th sample.lua cv_hutter/lm_lstmbig_epoch50.00_1.1675.t7 -primetext "[[pl:Icon]]
+[[pt:Icon]]
+[[ru:Icon]]
+[[sv:Programspraket  Icon]]</text>
+    </revision>
+  </page>
+  <page>
+    <title>Iconology</title>
+    <id>14802</id>
+    <revi"
+
+CUDA_VISIBLE_DEVICES=0 th sample.lua cv_hutter/lm_lstmbig_epoch50.00_1.1675.t7 -primetext "<title> Inherence relation</id>
+<id>14807</id>
+<revision>
+  <id>34980694</id>
+  <timestamp>
+    2006-01-13T04:19:25z
+  </timestamp>
+  <contributor>
+    <username>Ro"
+
 ###lstm train large (3 layers)
 CUDA_VISIBLE_DEVICES=0 th train.lua -data_dir data/hutter -print_every 250 -eval_val_every 95000 -checkpoint_dir cv_hutter -num_layers 3 -seq_length 100 -batch_size 250 -rnn_size 191 -savefile lstmlarge
 

@@ -7,6 +7,7 @@ require 'nngraph'
 require 'util.OneHot'
 require 'util.misc'
 require 'util.env_utils'
+model_utils = require 'util.model_utils'
 
 cmd = torch.CmdLine()
 cmd:text()
@@ -31,8 +32,11 @@ local function print_kv(t, k)
 end
 
 print_kv(checkpoint, 'opt')
+
 print_kv(checkpoint, 'val_losses')
-require'mobdebug'.start()
+
 print_kv(checkpoint, 'vocab')
 --print('#vocab = '); print(table_len(checkpoint.vocab))
 
+params, _ = model_utils.combine_all_parameters(checkpoint.protos.rnn)
+print('#params = '); print(params:numel())
