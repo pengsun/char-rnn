@@ -24,7 +24,7 @@ th sample.lua cv_threekingdoms/lm_lstm_epoch3.52_1.5203.t7  -primetext "Cao Cao"
 
 th sample.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7  -primetext "Cao Cao and Liu Bei"
 
-th sample.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7  -primetext "Zhu Geliang"
+th sample.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7  -primetext "Being short of food and hearing of the destruction of their three adherents in the city, the only course for Ma Teng and Han Sui was to retreat."
 
 ##################
 ## hutter
@@ -68,6 +68,20 @@ CUDA_VISIBLE_DEVICES=0 th sample.lua cv_hutter/lm_lstmbig_epoch50.00_1.1675.t7 -
   </timestamp>
   <contributor>
     <username>Ro"
+    
+CUDA_VISIBLE_DEVICES=0 th sample.lua cv_hutter/lm_lstmlarge_epoch50.00_1.1391.t7 -primetext "Cao Cao retorted angrily, You once abandoned me and now you have the impudence to come to see me! Tao Qian slew my whole family, and I will tear his heart out in revenge. I swear it! You may speak for your friend and say what you will. I shall be as if I heard not."
+
+CUDA_VISIBLE_DEVICES=0 th sample.lua cv_hutter/lm_lstmlarge_epoch50.00_1.1391.t7 -primetext "[[pl:Icon]]
+[[pt:Icon]]
+[[ru:Icon]]
+[[sv:Programspraket  Icon]]</text>
+    </revision>
+  </page>
+  <page>
+    <title>Iconology</title>
+    <id>14802</id>
+    <revi"
+
 
 ###lstm train large (3 layers)
 CUDA_VISIBLE_DEVICES=0 th train.lua -data_dir data/hutter -print_every 250 -eval_val_every 95000 -checkpoint_dir cv_hutter -num_layers 3 -seq_length 100 -batch_size 250 -rnn_size 191 -savefile lstmlarge
@@ -75,8 +89,15 @@ CUDA_VISIBLE_DEVICES=0 th train.lua -data_dir data/hutter -print_every 250 -eval
 ###lstm test large (3 layers)
 CUDA_VISIBLE_DEVICES=1 th test.lua cv_hutter/lm_lstmlarge_epoch50.00_1.1391.t7 -data_dir data/hutter -batch_size 500 -seq_length 100
 
+###lstm train large5 (5 layers, 192 units)
+CUDA_VISIBLE_DEVICES=1 th train.lua -data_dir data/hutter -print_every 500 -eval_val_every 95000 -checkpoint_dir cv_hutter -num_layers 5 -seq_length 100 -batch_size 100 -rnn_size 191 -savefile lstmlarge5
+
+
 ###lstm train venti (5 layers, 700 units)
 CUDA_VISIBLE_DEVICES=1 th train.lua -data_dir data/hutter -print_every 1000 -eval_val_every 95000 -checkpoint_dir cv_hutter -num_layers 5 -seq_length 100 -batch_size 25 -rnn_size 700 -savefile lstmventi
+
+###lstm test venti (5 layers, 700 units)
+CUDA_VISIBLE_DEVICES=0 th test.lua cv_hutter/lm_lstmventi_epoch2.50_3.5729.t7 -data_dir data/hutter -batch_size 50 -seq_length 100
 
 ### gru train
 CUDA_VISIBLE_DEVICES=1 th train.lua -data_dir data/hutter -print_every 250 -eval_val_every 95000 -checkpoint_dir cv_hutter -seq_length 100 -batch_size 500 -model gru -savefile gru
