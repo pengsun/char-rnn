@@ -227,10 +227,12 @@ function main()
   print('generating random quote sequence...')
   local slen = {left = 5, mid = 22, right = 8}
   local x = rand_quotestr(slen, checkpoint.vocab)
-  x = togpu(x)
+  togpu(x)
+  make_rowvector(x)
   
   -- fprop
   print('fprop on sequence...')
+  require'mobdebug'.start()
   rnn_state = fprop_seq(x, rnn_state)
   
   -- find the cell sensitive to specific event

@@ -104,3 +104,9 @@ function togpu(z)
   
   return z
 end
+
+function make_rowvector(z)
+  z:resize(1, z:numel())
+  return z
+end
+
