@@ -92,6 +92,9 @@ CUDA_VISIBLE_DEVICES=1 th test.lua cv_hutter/lm_lstmlarge_epoch50.00_1.1391.t7 -
 ###lstm train large5 (5 layers, 192 units)
 CUDA_VISIBLE_DEVICES=1 th train.lua -data_dir data/hutter -print_every 500 -eval_val_every 95000 -checkpoint_dir cv_hutter -num_layers 5 -seq_length 100 -batch_size 100 -rnn_size 191 -savefile lstmlarge5
 
+###lstm test large5 (3 layers)
+CUDA_VISIBLE_DEVICES=0 th test.lua cv_hutter/lm_lstmlarge5_epoch10.00_1.2352.t7 -data_dir data/hutter -batch_size 500 -seq_length 100
+
 
 ###lstm train venti (5 layers, 700 units)
 CUDA_VISIBLE_DEVICES=1 th train.lua -data_dir data/hutter -print_every 1000 -eval_val_every 95000 -checkpoint_dir cv_hutter -num_layers 5 -seq_length 100 -batch_size 25 -rnn_size 700 -savefile lstmventi
@@ -105,3 +108,8 @@ CUDA_VISIBLE_DEVICES=1 th train.lua -data_dir data/hutter -print_every 250 -eval
 ### gru test
 CUDA_VISIBLE_DEVICES=1 th test.lua cv_hutter/lm_gru_epoch50.00_1.2959.t7 -data_dir data/hutter -batch_size 500 -seq_length 100
 
+
+##################
+## visualize
+##################
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_hutter/lm_lstmlarge_epoch50.00_1.1391.t7 -primetext_dir data/hutter -batch_size 100 -seq_length 100

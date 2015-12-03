@@ -93,3 +93,14 @@ function xy_togpu(x,y)
   end
   return x,y
 end
+
+function togpu(z)
+  if is_cu() then
+    z = z:float():cuda()
+  end
+  if is_cl() then
+    z = z:cl()
+  end
+  
+  return z
+end
