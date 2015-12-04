@@ -1,0 +1,163 @@
+##################
+## true text
+##################
+
+### quoted string
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Hearing of Yuan Shao's invasion, Gongsun Zan sent his brother, Gongsun Yue, to see the usurper and demand his share of the region. 
+\"I want to see your elder brother himself. He and I have things to discuss,\" said Yuan Shao. "
+
+### quotes removed
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Hearing of Yuan Shao's invasion, Gongsun Zan sent his brother, Gongsun Yue, to see the usurper and demand his share of the region. 
+I want to see your elder brother himself. He and I have things to discuss, said Yuan Shao. "
+
+### quoted string
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Cao Cao replied, \"Liu Bei has rendered great services. You must wait till he has been received in audience and obtained his reward. After that he shall be sent here.\" 
+The people bowed low to the ground to express their thanks. Che Zhou, General of the Flying Cavalry,"
+
+### quotes removed
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Cao Cao replied, Liu Bei has rendered great services. You must wait till he has been received in audience and obtained his reward. After that he shall be sent here.
+The people bowed low to the ground to express their thanks. Che Zhou, General of the Flying Cavalry,"
+
+
+###### quoted string
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Just then a horseman came, riding at full speed and whirling his sword up, cut down both the captors, and rescued Cao Cao. It was Cao Hong. 
+Cao Cao said, \"I am doomed, good brother. Go and save yourself.\" 
+\"My lord, mount my horse quickly. I will go afoot,\" said Cao Hong. 
+\"If those wretches come up, what then?\" said Cao Cao. 
+\"The world can do without Cao Hong, but not without you, my lord.\" 
+\"If I live, I shall owe you my life,\" said Cao Cao. 
+So he mounted. Cao Hong tore off his own breastplate, gripped his sword, and went on foot after the horse. Thus they proceeded till the fourth watch when they saw before them a broad stream, and behind they still heard the shouts of pursuers drawing nearer and nearer. 
+\"This is my fate,\" said Cao Cao. \"I am really doomed.\" 
+Cao Hong helped Cao Cao down from his horse. Then taking off his fighting robe and helmet, Cao Hong took the wounded man on his back and waded into the stream. When they reached the further side, the pursuers had already gained the bank whence they shot arrows."
+
+### quoted string
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Raising his wine cup, and in a voice broken by emotion, he said, \"Today's success is the merit of the Imperial Guardian. I regret that he is not here to share our rejoicings.\" 
+In Wu, Sun Xi, General of the Flying Cavalry, went away from the court and wailed, facing the south. 
+\"Alas, ye blue heavens. What manner of man is this Sun Hao to yield thus the heritage of his family, won by the sword of General Sun Jian the Martially Glorious in the brave days that are past?\" 
+Meantime the victors marched homeward, and Sun Hao went to Luoyang to present himself at court. In his capacity of minister, he prostrated himself at the feet of the Emperor of the Jin Dynasty in the Hall of Audience. He was allowed a seat."
+
+### quotes removed
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Raising his wine cup, and in a voice broken by emotion, he said, Today's success is the merit of the Imperial Guardian. I regret that he is not here to share our rejoicings. 
+In Wu, Sun Xi, General of the Flying Cavalry, went away from the court and wailed, facing the south. 
+Alas, ye blue heavens. What manner of man is this Sun Hao to yield thus the heritage of his family, won by the sword of General Sun Jian the Martially Glorious in the brave days that are past? 
+Meantime the victors marched homeward, and Sun Hao went to Luoyang to present himself at court. In his capacity of minister, he prostrated himself at the feet of the Emperor of the Jin Dynasty in the Hall of Audience. He was allowed a seat."
+
+
+##################
+## true text no quotes
+##################
+### string
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "This ceremony over, the others left and Sun Jian returned to his camp. That night the stars and moon vied with each other in brightness. As Sun Jian sat in the open air looking up at the heavens, he noticed a mist spreading over the stars of the Constellation Draco"
+
+### add quotes
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "This ceremony over, the others left and Sun Jian returned to his camp. \"That night the stars and moon vied with each other in brightness. \" As Sun Jian sat in the open air looking up at the heavens, he noticed a mist spreading over the stars of the Constellation Draco"
+
+
+##################
+## sampled text
+##################
+
+## with sampled text
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Next day was going to denthantly rejected three thousand troops to become their health excellent days, and he was disposed to numble Li Hui. 
+\"Instructor, General, who you go,\" said Cao Cao. \"Let him for the mountains and last these army. Once Yin Xian are no unch toward your nughlate him, but gold in you,\" said Liu Bei."
+
+## with sampled text
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Lu Bu was miles. Lu Zhi is a copapterear to see him in war. 
+\"The escort Dong Shao comes, for friendly just I wish to give. How go to Liucheng and this a junder and obstinately reward with it many faults,\" said Liu Bei. \"You may agree many orival friend.\" 
+Such fall lifting power, was invaded by the honored city."
+
+##################
+## other text
+##################
+## with text for War and Peace
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "When speaking to Chichagov, Kutuzov in- 
+cidentally mentioned that the vehicles packed 
+with china that had been captured from him 
+at Borfsov had been recovered and would be 
+restored to him. 
+
+\"You mean to imply that I have nothing to 
+eat out of. ... On the contrary, I can supply 
+you with everything even if you want to give 
+dinner parties,\" warmly replied Chichagov, 
+who tried by every word he spoke to prove 
+his own rectitude and therefore imagined 
+Kutuzov to be animated by the same de- 
+sire. 
+
+Kutuzov, shrugging his shoulders, replied 
+with his subtle penetrating smile: \"I meant 
+merely to say what I said.\" 
+
+Contrary to the Emperor's wish Kutuzov 
+detained the greater part of the army at Vilna. 
+Those about him said that he became extra- 
+ordinarily slack and physically feeble during 
+his stay in that town."
+
+### with War and Peace
+CUDA_VISIBLE_DEVICES=1 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "One of them was leading by the bridle a fine 
+large French horse he had taken from the pris- 
+oner. 
+
+\"Sell us that horse.\" Denfsov called out to 
+the Cossacks. 
+
+\"If you like, your honor.\" 
+
+The officers got up and stood round the Cos- 
+sacks and their prisoner."
+
+
+CUDA_VISIBLE_DEVICES=1 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "This short man had on a white leather apron 
+which covered his chest and part of his legs; he 
+had on a kind of necklace above which rose a 
+high white ruffle, outlining his rather long 
+face which was lit up from below. 
+
+\"For what have you come hither?\" asked the 
+newcomer, turning in Pierre's direction at a 
+slight rustle made by the latter. \"Why have you, 
+who do not believe in the truth of the light 
+and who have not seen the light, come here? 
+What do you seek from us? Wisdom, virtue, en- 
+lightenment?\" 
+
+At the moment the door opened and the 
+stranger came in, Pierre felt a sense of awe and 
+veneration such as he had experienced in his 
+boyhood at confession"
+
+### with Tom Sawyer
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "So the one went off with one group of scholars, and the other with another. In a little while the two met at the bottom of the lane, and when they reached the school they had it all to themselves. Then they sat together, with a slate before them, and Tom gave Becky the pencil and held her hand in his, guiding it, and so created another surprising house. When the interest in art began to wane, the two fell to talking. Tom was swimming in bliss. He said:
+
+\"Do you love rats?\"
+
+\"No, I hate them.\"
+
+\"Well, I do, too-live ones. But I mean dead ones, to swing round your head with a string.\"
+
+\"No, I don't care for rats much, anyway. What I like is chewing-gum.\"
+
+\"Oh, I should say so. I wish I had some now.\"
+
+\"Do you? I've got some. I'll let you chew it awhile, but you must give it back to me.\"
+
+That was agreeable, so they chewed it turn about, and dangled their legs against the bench in excess of contentment."
+
+### with Tom Sawyer, quotes removed
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "So the one went off with one group of scholars, and the other with another. In a little while the two met at the bottom of the lane, and when they reached the school they had it all to themselves. Then they sat together, with a slate before them, and Tom gave Becky the pencil and held her hand in his, guiding it, and so created another surprising house. When the interest in art began to wane, the two fell to talking. Tom was swimming in bliss. He said:
+
+Do you love rats?
+
+No, I hate them.
+
+Well, I do, too-live ones. But I mean dead ones, to swing round your head with a string.
+
+No, I don't care for rats much, anyway. What I like is chewing-gum.
+
+Oh, I should say so. I wish I had some now.
+
+Do you? I've got some. I'll let you chew it awhile, but you must give it back to me.
+
+That was agreeable, so they chewed it turn about, and dangled their legs against the bench in excess of contentment."

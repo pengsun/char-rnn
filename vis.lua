@@ -56,7 +56,9 @@ function pred_on_seq(seq_text, cur_state, vocab, ivocab)
   local prediction
   for i = 1, #seq_text do
     c = seq_text:sub(i,i)
-    cur_char = torch.Tensor{vocab[c]}
+    local c_ind = vocab[c]
+    if not c_ind then error('char ' .. c .. ' not in vocab') end
+    cur_char = torch.Tensor{c_ind}
     if is_cu() then cur_char = cur_char:cuda() end
     if is_cl() then cur_char = cur_char:cl() end
     
@@ -138,15 +140,26 @@ end
 
 function find_strong_act_lstm(tar, states)
   -- states: [t][2*ell] list, each [1][u] tensor
-  
   local ts = states_to_tensor(states)
   local i_lay, i_unit, act
-  local d = 1000000
+  local d = 0
+  local nt = tar:norm()
   for ell = 1, ts:size(1) do
     for u = 1, ts:size(2) do
       local cur_act = ts[ell][u]
-      local cur_d = torch.dist(cur_act, tar)
-      if cur_d < d then
+      
+      -- dist
+--      local cur_d = torch.dist(cur_act, tar)
+--      if cur_d < d then
+--        d = cur_d
+--        i_lay, i_unit, act = ell, u, cur_act:clone()
+--      end 
+      
+      -- theta
+      local cur_d = torch.dot(cur_act, tar)
+      cur_d = cur_d / (cur_act:norm() * nt)
+
+      if cur_d > d then
         d = cur_d
         i_lay, i_unit, act = ell, u, cur_act:clone()
       end 
@@ -219,7 +232,7 @@ function main ()
 
   print(text)
   
-  -- fprop on it
+  -- fprop on i
   print('fprop on the text')
   local states
   _, cur_state, states = pred_on_seq(text, cur_state, vocab, ivocab)
@@ -235,15 +248,16 @@ function main ()
     tar, states)
   
   -- cell at specific layer and unit
---  local j_layer, j_unit = 2, 49
---  local ts = states_to_tensor(states)
---  local act = ts[j_layer][j_unit]:clone()
+  local j_layer, j_unit = 2, 49
+  local ts = states_to_tensor(states)
+  require'mobdebug'.start()
+  local act = ts[j_layer][j_unit]:clone()
   
   -- draw
   print('i_layer = ' .. i_lay)
   print('i_unit = ' .. i_unit)
   require'gnuplot'
-  if opt.thres_act then
+  if opt.thres_act > 0 then
     max_act = threshold_activation(max_act)
   end
   local what_draw = {
