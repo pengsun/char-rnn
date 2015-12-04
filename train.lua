@@ -220,6 +220,7 @@ function main()
     local loss = 0
     for t=1,opt.seq_length do
       clones.rnn[t]:training() -- make sure we are in correct mode (this is cheap, sets flag)
+      require'mobdebug'.start()
       local lst = clones.rnn[t]:forward{x[t], unpack(rnn_state[t-1])}
       rnn_state[t] = {}
       for i=1,#init_state do table.insert(rnn_state[t], lst[i]) end -- extract the state, without output

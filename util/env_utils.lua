@@ -101,7 +101,6 @@ function togpu(z)
   if is_cl() then
     z = z:cl()
   end
-  
   return z
 end
 
@@ -109,4 +108,10 @@ function make_rowvector(z)
   z:resize(1, z:numel())
   return z
 end
+
+function make_colvector(z)
+  z:resize(z:numel(), 1)
+  return z
+end
+
 

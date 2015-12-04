@@ -113,3 +113,32 @@ CUDA_VISIBLE_DEVICES=1 th test.lua cv_hutter/lm_gru_epoch50.00_1.2959.t7 -data_d
 ## visualize
 ##################
 CUDA_VISIBLE_DEVICES=0 th vis.lua cv_hutter/lm_lstmlarge_epoch50.00_1.1391.t7 -primetext_dir data/hutter -batch_size 100 -seq_length 100
+
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Hearing of Yuan Shao's invasion, Gongsun Zan sent his brother, Gongsun Yue, to see the usurper and demand his share of the region. 
+\"I want to see your elder brother himself. He and I have things to discuss,\" said Yuan Shao. "
+
+
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Cao Cao replied, \"Liu Bei has rendered great services. You must wait till he has been received in audience and obtained his reward. After that he shall be sent here.\" 
+The people bowed low to the ground to express their thanks. Che Zhou, General of the Flying Cavalry,"
+
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "This ceremony over, the others left and Sun Jian returned to his camp. That night the stars and moon vied with each other in brightness. As Sun Jian sat in the open air looking up at the heavens, he noticed a mist spreading over the stars of the Constellation Draco"
+
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Just then a horseman came, riding at full speed and whirling his sword up, cut down both the captors, and rescued Cao Cao. It was Cao Hong. 
+Cao Cao said, \"I am doomed, good brother. Go and save yourself.\" 
+\"My lord, mount my horse quickly. I will go afoot,\" said Cao Hong. 
+\"If those wretches come up, what then?\" said Cao Cao. 
+\"The world can do without Cao Hong, but not without you, my lord.\" 
+\"If I live, I shall owe you my life,\" said Cao Cao. 
+So he mounted. Cao Hong tore off his own breastplate, gripped his sword, and went on foot after the horse. Thus they proceeded till the fourth watch when they saw before them a broad stream, and behind they still heard the shouts of pursuers drawing nearer and nearer. 
+\"This is my fate,\" said Cao Cao. \"I am really doomed.\" 
+Cao Hong helped Cao Cao down from his horse. Then taking off his fighting robe and helmet, Cao Hong took the wounded man on his back and waded into the stream. When they reached the further side, the pursuers had already gained the bank whence they shot arrows."
+
+
+## with sampled text
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Next day was going to denthantly rejected three thousand troops to become their health excellent days, and he was disposed to numble Li Hui. 
+\"Instructor, General, who you go,\" said Cao Cao. \"Let him for the mountains and last these army. Once Yin Xian are no unch toward your nughlate him, but gold in you,\" said Liu Bei."
+
+## with sampled text
+CUDA_VISIBLE_DEVICES=0 th vis.lua cv_threekingdoms/lm_lstm_epoch50.00_1.0838.t7 -text "Lu Bu was miles. Lu Zhi is a copapterear to see him in war. 
+\"The escort Dong Shao comes, for friendly just I wish to give. How go to Liucheng and this a junder and obstinately reward with it many faults,\" said Liu Bei. \"You may agree many orival friend.\" 
+Such fall lifting power, was invaded by the honored city."

@@ -34,6 +34,25 @@ function assert_saved_vocab_compatible(v, saved_v)
   end  
 end
 
+function make_vocabulary_ascii()
+  local str = "abcdefghijklmnopqrstuvwxyz0123456789" .. 
+    "-,;.!?:'\"/\\|_@#$%^&*~`+-=<>()[]{}"
+  local vocab = {}
+  for i = 1, #str do
+    vocab[str:sub(i,i)] = i
+  end
+  return vocab
+end
+
+function make_vocabulary_letter()
+  local str = "abcdefghijklmnopqrstuvwxyz"
+  local vocab = {}
+  for i = 1, #str do
+    vocab[str:sub(i,i)] = i
+  end
+  return vocab
+end
+
 function make_inverse_vocabulary(vocab)
   local ivocab = {}
   for c,i in pairs(vocab) do ivocab[i] = c end
