@@ -155,7 +155,7 @@ function find_strong_act_lstm(tar, states)
 --        i_lay, i_unit, act = ell, u, cur_act:clone()
 --      end 
       
-      -- theta
+      -- cos(angle)
       local cur_d = torch.dot(cur_act, tar)
       cur_d = cur_d / (cur_act:norm() * nt)
 
@@ -189,6 +189,8 @@ function get_opt()
   cmd:option('-primetext',"",'used as a prompt to "seed" the state of the LSTM using a given sequence, before we sample.')
   cmd:option('-text',"","the string to be investigated.")
   cmd:option('-thres_act',0,"threshold the activation when plotting.")
+  cmd:option('-show_baseline',0,"wheter to show baseline curve.")
+  cmd:option('-show_tar',0,"wheter to show target curve.")
   cmd:option('-gpuid',0,'which gpu to use. -1 = use CPU')
   cmd:option('-opencl',0,'use OpenCL (instead of CUDA)')
   cmd:option('-verbose',1,'set to 0 to ONLY print the sampled text, no diagnostics')
@@ -250,7 +252,6 @@ function main ()
   -- cell at specific layer and unit
   local j_layer, j_unit = 2, 49
   local ts = states_to_tensor(states)
-  require'mobdebug'.start()
   local act = ts[j_layer][j_unit]:clone()
   
   -- draw
@@ -260,10 +261,13 @@ function main ()
   if opt.thres_act > 0 then
     max_act = threshold_activation(max_act)
   end
-  local what_draw = {
-    {'tar',tar,'+'}, {'max-act',max_act,'-'},
-  }
-  if act then table.insert(what_draw, {'baseline-act',act,'-'}) end
+  local what_draw = { {'max-act',max_act,'-'} }
+  if opt.show_tar > 0 then 
+    table.insert(what_draw, {'tar',tar,'+'}) 
+  end
+  if opt.show_baseline > 0 then 
+    table.insert(what_draw, {'baseline-act',act,'-'})
+  end
   gnuplot.plot(unpack(what_draw))
 end
 
