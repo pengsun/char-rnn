@@ -27,6 +27,37 @@ evaluating loss over split index 3
 test loss = 1.2937431457877	
 test bpc = 1.866476820612	
 
+
+######################################################################
+### lstmlarge5
+######################################################################
+CUDA_VISIBLE_DEVICES=0 th test.lua cv_hutter/lm_lstmlarge5_epoch50.00_1.1771.t7 -data_dir data/hutter -batch_size 500 -seq_length 100 
+using CUDA on GPU 0...	
+loading data files...	
+reshaping tensor...	
+data load done. Number of data batches in train: 1900, val: 0, test: 100	
+batch_size = 500	
+vocab size: 205	
+creating an lstm...	
+num_layers = 5	
+rnn_size = 191	
+number of parameters in the model: 1516936	
+cloning rnn	
+cloning criterion	
+warm up on training set...	
+evaluating loss over split index 1	
+ [=================== 1900/1900 ===============>] ETA: 0ms | Step: 508ms        
+train loss = 1.148967192018	
+train bpc = 1.6576092700685	
+
+	
+evaluate on testing set...	
+evaluating loss over split index 3	
+ [=================== 100/100 =================>] ETA: 0ms | Step: 512ms        
+test loss = 1.1559065430284	
+test bpc = 1.6676206373581	
+
+
 ######################################################################
 ### lstmlarge
 ######################################################################
